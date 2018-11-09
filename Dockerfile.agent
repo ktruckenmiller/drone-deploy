@@ -1,0 +1,9 @@
+ARG VERSION=1.0.0-rc.1
+FROM drone/agent:${VERSION}
+COPY agent.sh /agent.sh
+COPY vendor/ssm_get_parameter /bin/
+ADD vendor/busybox.tar.xz /
+RUN chmod +x /bin/ssm_get_parameter
+RUN chmod +x /agent.sh
+ENV AWS_REGION=us-west-2
+ENTRYPOINT /agent.sh

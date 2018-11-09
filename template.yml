@@ -1,0 +1,161 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: An example service
+Parameters:
+  VpcId:
+    Type: String
+    Default: vpc-849531e0
+  CertId:
+    Type: String
+  DomainName:
+    Type: String
+  ClusterName:
+    Type: String
+    Default: webapp2
+  HostedZone:
+    Type: String
+  ServiceName:
+    Type: String
+  Version:
+    Type: String
+
+Resources:
+  TargetGroup443:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      UnhealthyThresholdCount: 7
+      Matcher:
+        HttpCode: 200-299
+      HealthCheckPath: "/healthz"
+      Port: 1
+      Protocol: HTTP
+      VpcId: !Ref VpcId
+
+  ListenerRule443:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref TargetGroup443
+      Conditions:
+      - Field: host-header
+        Values:
+        - !Ref DomainName
+      ListenerArn: !ImportValue kloudcover-alb:ListenerRule443
+      Priority: 6
+
+  ListenerCertificate:
+    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+    Properties:
+      Certificates:
+          - CertificateArn: !Sub "arn:aws:acm:${AWS::Region}:${AWS::AccountId}:certificate/${CertId}"
+      ListenerArn: !ImportValue kloudcover-alb:ListenerRule443
+
+  Service:
+    DependsOn:
+      - ListenerRule443
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref ClusterName
+      DesiredCount: 1
+      LoadBalancers:
+        - ContainerName: drone-server
+          ContainerPort: 8000
+          TargetGroupArn: !Ref TargetGroup443
+      Role: !ImportValue kloudcover-alb:ServiceRole
+      PlacementStrategies:
+        - Type: spread
+          Field: instanceId
+      TaskDefinition: !Ref Task
+
+  Logs:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub ${ServiceName}
+      RetentionInDays: 7
+
+  Task:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+        - Name: drone-server
+          Cpu: 20
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/drone:server-${Version}
+          MemoryReservation: 128
+          Environment:
+            - Name: DRONE_HOST
+              Value: drone.kloudcover.com
+            - Name: DRONE_OPEN
+              Value: true
+            - Name: DRONE_ADMIN
+              Value: ktruckenmiller
+          PortMappings:
+            - ContainerPort: 8000
+          MountPoints:
+            - SourceVolume: 'drone'
+              ContainerPath: '/var/lib/drone'
+              ReadOnly: false
+
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub ${ServiceName}
+              awslogs-region: !Sub ${AWS::Region}
+              awslogs-stream-prefix: !Sub ${ServiceName}
+        - Name: !Sub ${ServiceName}-agent
+          Cpu: 40
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/drone:agent-${Version}
+          MemoryReservation: 1024
+          Environment:
+            - Name: DRONE_MAX_PROCS
+              Value: 2
+            - Name: DRONE_SERVER
+              Value: drone-server:9000
+          Links:
+            - "drone-server:drone-server"
+          MountPoints:
+            - SourceVolume: 'docker-sock'
+              ContainerPath: '/var/run/docker.sock'
+              ReadOnly: false
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub ${ServiceName}
+              awslogs-region: !Sub ${AWS::Region}
+              awslogs-stream-prefix: !Sub ${ServiceName}-agent
+      Volumes:
+        - Name: drone
+          Host:
+            SourcePath: '/efs/drone'
+        - Name: docker-sock
+          Host:
+            SourcePath: '/var/run/docker.sock'
+      TaskRoleArn: !Ref TaskRole
+
+  TaskRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "ecs-tasks.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+          - Effect: "Allow"
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: "sts:AssumeRole"
+      Path: '/'
+      Policies:
+        - PolicyName: "ssm"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - 'ssm:*'
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/drone/*"
