@@ -1,0 +1,7 @@
+---
+- name: deploy rds
+  cloudformation:
+    stack_name: drone-rds
+    state: present
+    region: "{{region}}"
+    template: deployment/rds.yml

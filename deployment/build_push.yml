@@ -1,0 +1,18 @@
+---
+
+- name: build agent
+  shell: docker build -t {{account}}.dkr.ecr.{{region}}.amazonaws.com/drone:agent-{{sha}} -f agent/Dockerfile --build-arg VERSION={{drone_version}} agent/.
+
+- name: build server
+  shell: docker build -t {{account}}.dkr.ecr.{{region}}.amazonaws.com/drone:server-{{sha}} -f server/Dockerfile --build-arg VERSION={{drone_version}} server/.
+
+- name: docker login
+  shell: eval $(aws ecr get-login --no-include-email --region {{region}})
+
+- shell: aws ecr create-repository --repository-name drone --region {{region}}
+  ignore_errors: true
+
+- name: push stuff
+  shell: docker push {{account}}.dkr.ecr.{{region}}.amazonaws.com/drone:server-{{sha}}
+
+- shell: docker push {{account}}.dkr.ecr.{{region}}.amazonaws.com/drone:agent-{{sha}}

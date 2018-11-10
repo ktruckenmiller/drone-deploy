@@ -1,0 +1,25 @@
+Resources:
+  DBSg:
+    Type: AWS::RDS::DBSecurityGroup
+    Properties:
+      GroupDescription: "Ingress for Amazon ECS security group"
+      DBSecurityGroupIngress:
+        - EC2SecurityGroupId: !ImportValue kloudcover-cluster:DBBadgeSg
+  MyDBSmall:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceClass: db.t2.micro
+      AllocatedStorage: 20
+      Engine: mariadb
+      MasterUsername: drone
+      MasterUserPassword: '{{resolve:ssm-secure:/drone/RDS_PASSWORD:1}}'
+      DBName: MariaDB
+      DBSecurityGroups:
+        - !Ref DBSg
+
+  DataSource:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Name: /drone/RDS_HOST
+      Value: !GetAtt MyDBSmall.Endpoint.Address

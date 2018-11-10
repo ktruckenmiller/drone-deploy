@@ -3,29 +3,35 @@
   gather_facts: false
   vars:
     stackname: drone
-    vpc: vpc-849531e0
-    region: us-west-2
-    version: 0.8.2
-    default_service:
-      name: drone
-      template: template.yml
-      cert_id: 727e9900-8f50-4ba8-8bce-09ab4be1e2a2
-      domain_name: "drone.kloudcover.com"
-      hosted_zone: "kloudcover.com."
+    region: us-east-1
+    account: 601394826940
+    drone_version: 1.0.0-rc.1
+
+    vpc: vpc-3affa95f
+    domain_name: cicd.kloudcover.com
+    hosted_zone: kloudcover.com
+    cluster_name: kloudcover
+    subnets: subnet-1f0d6f68,subnet-21963e0a,subnet-315d2054,subnet-774a1b4d,subnet-e51072e9,subnet-f676f6af
   tasks:
-    - name: build and push new agent
-      shell: ./build.sh
+    - shell: git rev-parse HEAD
+      register: shaout
+    - set_fact:
+        sha: "{{shaout.stdout}}"
+    - debug: var=sha
+    - include: deployment/task_rds.yml
+    - include: deployment/build_push.yml
 
     - name: stack for default resources for alb
       cloudformation:
         stack_name: "{{stackname}}"
         state: present
         region: "{{region}}"
-        template: "{{default_service['template']}}"
+        template: deployment/template.yml
         template_parameters:
-          ServiceName: "{{default_service['name']}}"
-          DomainName: "{{default_service['domain_name']}}"
-          CertId: "{{default_service['cert_id']}}"
-          HostedZone: "{{default_service['hosted_zone']}}"
-          Version: "{{version}}"
-          ClusterName: "kloudcover"
+          ServiceName: "{{ stackname }}"
+          DomainName: "{{ domain_name }}"
+          HostedZone: "{{ hosted_zone }}"
+          Version: "{{ sha }}"
+          ClusterName: "{{ cluster_name }}"
+          Subnets: "{{subnets}}"
+          VpcId: "{{vpc}}"
