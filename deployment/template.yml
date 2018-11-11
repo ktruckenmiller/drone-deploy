@@ -182,8 +182,6 @@ Resources:
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/drone:server-${Version}
           MemoryReservation: 128
           Environment:
-            - Name: DRONE_HOST
-              Value: !Ref DomainName
             - Name: DRONE_OPEN
               Value: true
             - Name: DRONE_ADMIN
@@ -196,6 +194,8 @@ Resources:
               Value: !Sub ${AWS::Region}
             - Name: DRONE_S3_BUCKET
               Value: !Ref DroneS3Bucket
+            - Name: DRONE_SERVER_HOST
+              Value: !Ref DomainName
           PortMappings:
             - ContainerPort: 443
           MountPoints:
