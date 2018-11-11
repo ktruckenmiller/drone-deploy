@@ -159,7 +159,7 @@ Resources:
       DesiredCount: 1
       LoadBalancers:
         - ContainerName: drone-server
-          ContainerPort: 443
+          ContainerPort: 80
           TargetGroupArn: !Ref TargetGroup443
       Role: !GetAtt ServiceRole.Arn
       PlacementStrategies:
@@ -197,7 +197,7 @@ Resources:
             - Name: DRONE_SERVER_HOST
               Value: !Ref DomainName
           PortMappings:
-            - ContainerPort: 443
+            - ContainerPort: 80
           MountPoints:
             - SourceVolume: 'drone'
               ContainerPath: '/var/lib/drone'
