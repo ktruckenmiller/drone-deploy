@@ -22,65 +22,65 @@ Resources:
 
   DroneS3Bucket:
     Type: AWS::S3::Bucket
+  #
+  # ALBToClusterSG:
+  #   Type: AWS::EC2::SecurityGroup
+  #   Properties:
+  #     GroupDescription: A security group for clusters to consume for this ALB
+  #     VpcId: !Ref VpcId
 
-  ALBToClusterSG:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: A security group for clusters to consume for this ALB
-      VpcId: !Ref VpcId
-
-  ServiceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: "Allow"
-            Principal:
-              Service:
-                - "ecs.amazonaws.com"
-            Action:
-              - "sts:AssumeRole"
-      Policies:
-        - PolicyName: ecs-service
-          PolicyDocument:
-            Statement:
-              - Action:
-                  - elasticloadbalancing:DeregisterInstancesFromLoadBalancer
-                  - elasticloadbalancing:DeregisterTargets
-                  - elasticloadbalancing:RegisterTargets
-                  - elasticloadbalancing:RegisterInstancesWithLoadBalancer
-                  - elasticloadbalancing:Describe*
-                  - elasticloadbalancing:DescribeTargetGroups
-                  - elasticloadbalancing:DescribeTargetHealth
-                  - ec2:Describe*
-                  - ec2:AuthorizeSecurityGroupIngress
-                Effect: Allow
-                Resource: "*"
-  IncomingWeb:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Security group for our kloudcover ALB
-      SecurityGroupIngress:
-        - CidrIp: 0.0.0.0/0
-          IpProtocol: -1
-      VpcId: !Ref VpcId
-
-  ALB:
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    Properties:
-      Scheme: internet-facing
-      LoadBalancerAttributes:
-        - Key: idle_timeout.timeout_seconds
-          Value: 600
-      Subnets:
-        Fn::Split:
-          - ','
-          - !Sub ${Subnets}
-      SecurityGroups:
-      - Fn::ImportValue:
-          Fn::Sub: ${ClusterName}-cluster:ALBBadgeSg
-      - !Ref IncomingWeb
+  # ServiceRole:
+  #   Type: AWS::IAM::Role
+  #   Properties:
+  #     AssumeRolePolicyDocument:
+  #       Version: "2012-10-17"
+  #       Statement:
+  #         - Effect: "Allow"
+  #           Principal:
+  #             Service:
+  #               - "ecs.amazonaws.com"
+  #           Action:
+  #             - "sts:AssumeRole"
+  #     Policies:
+  #       - PolicyName: ecs-service
+  #         PolicyDocument:
+  #           Statement:
+  #             - Action:
+  #                 - elasticloadbalancing:DeregisterInstancesFromLoadBalancer
+  #                 - elasticloadbalancing:DeregisterTargets
+  #                 - elasticloadbalancing:RegisterTargets
+  #                 - elasticloadbalancing:RegisterInstancesWithLoadBalancer
+  #                 - elasticloadbalancing:Describe*
+  #                 - elasticloadbalancing:DescribeTargetGroups
+  #                 - elasticloadbalancing:DescribeTargetHealth
+  #                 - ec2:Describe*
+  #                 - ec2:AuthorizeSecurityGroupIngress
+  #               Effect: Allow
+  #               Resource: "*"
+  # IncomingWeb:
+  #   Type: AWS::EC2::SecurityGroup
+  #   Properties:
+  #     GroupDescription: Security group for our kloudcover ALB
+  #     SecurityGroupIngress:
+  #       - CidrIp: 0.0.0.0/0
+  #         IpProtocol: -1
+  #     VpcId: !Ref VpcId
+  #
+  # ALB:
+  #   Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+  #   Properties:
+  #     Scheme: internet-facing
+  #     LoadBalancerAttributes:
+  #       - Key: idle_timeout.timeout_seconds
+  #         Value: 600
+  #     Subnets:
+  #       Fn::Split:
+  #         - ','
+  #         - !Sub ${Subnets}
+  #     SecurityGroups:
+  #     - Fn::ImportValue:
+  #         Fn::Sub: ${ClusterName}-cluster:ALBBadgeSg
+  #     - !Ref IncomingWeb
 
   TargetGroup443:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -182,8 +182,8 @@ Resources:
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/drone:server-${Version}
           MemoryReservation: 128
           Environment:
-            - Name: DRONE_OPEN
-              Value: true
+            - Name: DRONE_GITHUB_SERVER
+              Value: https://github.com
             - Name: DRONE_ADMIN
               Value: ktruckenmiller
             - Name: DRONE_REPOSITORY_FILTER
@@ -196,12 +196,14 @@ Resources:
               Value: !Ref DroneS3Bucket
             - Name: DRONE_SERVER_HOST
               Value: !Ref DomainName
+            - Name: DRONE_SERVER_PROTO
+              Value: https
           PortMappings:
             - ContainerPort: 80
-          MountPoints:
-            - SourceVolume: 'drone'
-              ContainerPath: '/var/lib/drone'
-              ReadOnly: false
+          # MountPoints:
+          #   - SourceVolume: 'drone'
+          #     ContainerPath: '/var/lib/drone'
+          #     ReadOnly: false
 
           LogConfiguration:
             LogDriver: awslogs
@@ -209,39 +211,39 @@ Resources:
               awslogs-group: !Sub ${ServiceName}
               awslogs-region: !Sub ${AWS::Region}
               awslogs-stream-prefix: !Sub ${ServiceName}
-        - Name: !Sub ${ServiceName}-agent
-          Cpu: 40
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/drone:agent-${Version}
-          MemoryReservation: 1024
-          Environment:
-            - Name: DRONE_RUNNER_CAPACITY
-              Value: 2
-            - Name: DRONE_RPC_SERVER
-              Value: drone-server
-            - Name: AWS_DEFAULT_REGION
-              Value: !Sub ${AWS::Region}
-            - Name: AWS_REGION
-              Value: !Sub ${AWS::Region}
-          Links:
-            - "drone-server:drone-server"
-          MountPoints:
-            - SourceVolume: 'docker-sock'
-              ContainerPath: '/var/run/docker.sock'
-              ReadOnly: false
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Sub ${ServiceName}
-              awslogs-region: !Sub ${AWS::Region}
-              awslogs-stream-prefix: !Sub ${ServiceName}-agent
-      Volumes:
-        - Name: drone
-          Host:
-            SourcePath: '/efs/drone'
-        - Name: docker-sock
-          Host:
-            SourcePath: '/var/run/docker.sock'
-      TaskRoleArn: !Ref TaskRole
+        # - Name: !Sub ${ServiceName}-agent
+        #   Cpu: 40
+        #   Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/drone:agent-${Version}
+        #   MemoryReservation: 1024
+        #   Environment:
+        #     - Name: DRONE_RUNNER_CAPACITY
+        #       Value: 2
+        #     - Name: DRONE_RPC_SERVER
+        #       Value: drone-server
+        #     - Name: AWS_DEFAULT_REGION
+        #       Value: !Sub ${AWS::Region}
+        #     - Name: AWS_REGION
+        #       Value: !Sub ${AWS::Region}
+        #   Links:
+        #     - "drone-server:drone-server"
+        #   MountPoints:
+        #     - SourceVolume: 'docker-sock'
+        #       ContainerPath: '/var/run/docker.sock'
+        #       ReadOnly: false
+        #   LogConfiguration:
+        #     LogDriver: awslogs
+        #     Options:
+        #       awslogs-group: !Sub ${ServiceName}
+        #       awslogs-region: !Sub ${AWS::Region}
+        #       awslogs-stream-prefix: !Sub ${ServiceName}-agent
+      # Volumes:
+      #   # - Name: drone
+      #   #   Host:
+      #   #     SourcePath: '/efs/drone'
+      #   - Name: docker-sock
+      #     Host:
+      #       SourcePath: '/var/run/docker.sock'
+      # TaskRoleArn: !Ref TaskRole
 
   TaskRole:
     Type: "AWS::IAM::Role"
