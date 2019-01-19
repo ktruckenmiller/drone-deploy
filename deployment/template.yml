@@ -151,8 +151,8 @@ Resources:
       ListenerArn: !Ref Listener443
 
   Service:
-    # DependsOn:
-    #   - ListenerRule443
+    DependsOn:
+      - ListenerRule443
     Type: AWS::ECS::Service
     Properties:
       Cluster: !Ref ClusterName
@@ -198,11 +198,10 @@ Resources:
               Value: !Ref DomainName
           PortMappings:
             - ContainerPort: 80
-          MountPoints:
-            - SourceVolume: 'drone'
-              ContainerPath: '/var/lib/drone'
-              ReadOnly: false
-
+          # MountPoints:
+          #   - SourceVolume: 'drone'
+          #     ContainerPath: '/var/lib/drone'
+          #     ReadOnly: false
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -212,12 +211,12 @@ Resources:
         - Name: !Sub ${ServiceName}-agent
           Cpu: 40
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/drone:agent-${Version}
-          MemoryReservation: 1024
+          MemoryReservation: 128
           Environment:
             - Name: DRONE_RUNNER_CAPACITY
               Value: 2
             - Name: DRONE_RPC_SERVER
-              Value: drone-server
+              Value: !Sub https://${DomainName}
             - Name: AWS_DEFAULT_REGION
               Value: !Sub ${AWS::Region}
             - Name: AWS_REGION
@@ -235,9 +234,9 @@ Resources:
               awslogs-region: !Sub ${AWS::Region}
               awslogs-stream-prefix: !Sub ${ServiceName}-agent
       Volumes:
-        - Name: drone
-          Host:
-            SourcePath: '/efs/drone'
+        # - Name: drone
+        #   Host:
+        #     SourcePath: '/efs/drone'
         - Name: docker-sock
           Host:
             SourcePath: '/var/run/docker.sock'
