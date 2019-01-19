@@ -18,7 +18,6 @@
     - set_fact:
         sha: "{{shaout.stdout}}"
     - debug: var=sha
-    - include: deployment/task_rds.yml
     - include: deployment/build_push.yml
 
     - name: stack for default resources for alb
