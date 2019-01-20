@@ -3,15 +3,13 @@
   gather_facts: false
   vars:
     stackname: drone
-    region: us-east-1
+    region: us-west-2
     account: 601394826940
-    drone_version: 1.0.0-rc.1
-
-    vpc: vpc-3affa95f
-    domain_name: cicd.kloudcover.com
+    drone_version: 1.0.0-rc.4
+    cert_id: 727e9900-8f50-4ba8-8bce-09ab4be1e2a2
+    domain_name: drone.kloudcover.com
     hosted_zone: kloudcover.com
     cluster_name: kloudcover
-    subnets: subnet-1f0d6f68,subnet-21963e0a,subnet-315d2054,subnet-774a1b4d,subnet-e51072e9,subnet-f676f6af
   tasks:
     - shell: git rev-parse HEAD
       register: shaout
@@ -20,7 +18,7 @@
     - debug: var=sha
     - include: deployment/build_push.yml
 
-    - name: stack for default resources for alb
+    - name: drone stack
       cloudformation:
         stack_name: "{{stackname}}"
         state: present
@@ -32,5 +30,4 @@
           HostedZone: "{{ hosted_zone }}"
           Version: "{{ sha }}"
           ClusterName: "{{ cluster_name }}"
-          Subnets: "{{subnets}}"
-          VpcId: "{{vpc}}"
+          CertId: "{{cert_id}}"

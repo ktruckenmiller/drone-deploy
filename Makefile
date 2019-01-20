@@ -8,7 +8,7 @@ develop:
 		ktruckenmiller/ansible \
 		sh
 
-build:
+deploy:
 	docker run -it --rm \
 		-v $(shell pwd):/app \
 		-v /var/run/docker.sock:/var/run/docker.sock \

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -e
-VERSION="1.0.0-rc.1"
+VERSION="1.0.0-rc.4"
 REGION=${AWS_REGION:-'us-west-2'}
 ACCOUNT=${AWS_ACCOUNT:-'601394826940'}
 
