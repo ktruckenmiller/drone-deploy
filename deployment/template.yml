@@ -91,6 +91,9 @@ Resources:
   Task:
     Type: AWS::ECS::TaskDefinition
     Properties:
+      PlacementConstraints:
+        - Type: memberOf
+          Expression: attribute:ecs.instance-type == t2.medium
       ContainerDefinitions:
         - Name: drone-server
           Cpu: 20
@@ -113,6 +116,8 @@ Resources:
               Value: !Ref DomainName
             - Name: DRONE_SERVER_PROTO
               Value: https
+            - Name: DRONE_AGENTS_ENABLED
+              Value: true
           PortMappings:
             - ContainerPort: 80
           # MountPoints:
@@ -134,7 +139,7 @@ Resources:
             - Name: DRONE_RUNNER_CAPACITY
               Value: 2
             - Name: DRONE_RPC_SERVER
-              Value: drone-server
+              Value: !Sub https://${DomainName}
             - Name: AWS_DEFAULT_REGION
               Value: !Sub ${AWS::Region}
             - Name: AWS_REGION
