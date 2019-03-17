@@ -1,0 +1,28 @@
+Parameters:
+  ServiceName:
+    Type: String
+
+Outputs:
+  S3Drone:
+    Value: !Ref DroneS3Bucket
+    Export:
+      Name: !Sub ${AWS::StackName}:S3Bucket
+
+Resources:
+  Logs:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub ${ServiceName}
+      RetentionInDays: 7
+
+  DroneS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub drone-logs-${AWS::Region}-${AWS::AccountId}
+      # LifecycleConfiguration:
+      #   Rules:
+      #     - Id: IntelligentTieringTransition
+      #       Status: Enabled
+      #       Transitions:
+      #         - TransitionInDays: 30
+      #           StorageClass: INTELLIGENT_TIERING

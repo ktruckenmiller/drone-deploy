@@ -17,6 +17,14 @@
         sha: "{{shaout.stdout}}"
     - debug: var=sha
     - include: deployment/build_push.yml
+    - name: long lived stack
+      cloudformation:
+        stack_name: "{{ stackname }}-long-lived"
+        state: present
+        region: "{{region}}"
+        template: "deployment/long_lived.yml"
+        template_parameters:
+          ServiceName: "{{ stackname }}"
 
     - name: drone stack
       cloudformation:

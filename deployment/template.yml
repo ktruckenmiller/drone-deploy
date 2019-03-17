@@ -17,8 +17,7 @@ Parameters:
 
 Resources:
 
-  DroneS3Bucket:
-    Type: AWS::S3::Bucket
+
 
   TargetGroup443:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -77,23 +76,21 @@ Resources:
           ContainerPort: 80
           TargetGroupArn: !Ref TargetGroup443
       Role: !ImportValue kloudcover-alb:ServiceRole
-      PlacementStrategies:
-        - Type: spread
-          Field: instanceId
+      # PlacementStrategies:
+      #   - Type: spread
+      #     Field: instanceId
+      PlacementConstraints:
+        - Type: memberOf
+          Expression: attribute:ecs.instance-type != m3.medium
       TaskDefinition: !Ref Task
 
-  Logs:
-    Type: "AWS::Logs::LogGroup"
-    Properties:
-      LogGroupName: !Sub ${ServiceName}
-      RetentionInDays: 7
 
   Task:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      PlacementConstraints:
-        - Type: memberOf
-          Expression: attribute:ecs.instance-type == t2.medium
+      # PlacementConstraints:
+      #   - Type: memberOf
+      #     Expression: attribute:ecs.instance-type != m3.medium
       ContainerDefinitions:
         - Name: drone-server
           Cpu: 20
@@ -110,8 +107,10 @@ Resources:
               Value: !Sub ${AWS::Region}
             - Name: AWS_DEFAULT_REGION
               Value: !Sub ${AWS::Region}
+
             - Name: DRONE_S3_BUCKET
-              Value: !Ref DroneS3Bucket
+              Value: !ImportValue drone-long-lived:S3Bucket
+
             - Name: DRONE_SERVER_HOST
               Value: !Ref DomainName
             - Name: DRONE_SERVER_PROTO
@@ -198,9 +197,5 @@ Resources:
                 Action:
                   - s3:*
                 Resource:
-                  - Fn::Sub:
-                      - ${Arn}
-                      - {Arn: !GetAtt DroneS3Bucket.Arn}
-                  - Fn::Sub:
-                      - ${Arn}/*
-                      - {Arn: !GetAtt DroneS3Bucket.Arn}
+                  - !Sub arn:aws:s3:::drone-logs-${AWS::Region}-${AWS::AccountId}
+                  - !Sub arn:aws:s3:::drone-logs-${AWS::Region}-${AWS::AccountId}/*
