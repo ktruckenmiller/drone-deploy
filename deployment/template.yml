@@ -30,6 +30,9 @@ Resources:
       Port: 1
       Protocol: HTTP
       VpcId: !ImportValue dc-vpc-exports:VpcId
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: 30
 
   # myDNSRecord:
   #   DependsOn:
@@ -107,15 +110,15 @@ Resources:
               Value: !Sub ${AWS::Region}
             - Name: AWS_DEFAULT_REGION
               Value: !Sub ${AWS::Region}
-
             - Name: DRONE_S3_BUCKET
               Value: !ImportValue drone-long-lived:S3Bucket
-
             - Name: DRONE_SERVER_HOST
               Value: !Ref DomainName
             - Name: DRONE_SERVER_PROTO
               Value: https
             - Name: DRONE_AGENTS_ENABLED
+              Value: true
+            - Name: DRONE_LOGS_DEBUG
               Value: true
           PortMappings:
             - ContainerPort: 80
@@ -133,12 +136,14 @@ Resources:
         - Name: !Sub ${ServiceName}-agent
           Cpu: 40
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/drone:agent-${Version}
-          MemoryReservation: 1024
+          MemoryReservation: 256
           Environment:
             - Name: DRONE_RUNNER_CAPACITY
               Value: 2
             - Name: DRONE_RPC_SERVER
               Value: !Sub https://${DomainName}
+            - Name: DRONE_LOGS_DEBUG
+              Value: true
             - Name: AWS_DEFAULT_REGION
               Value: !Sub ${AWS::Region}
             - Name: AWS_REGION
