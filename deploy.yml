@@ -5,7 +5,7 @@
     stackname: drone
     region: us-west-2
     account: 601394826940
-    drone_version: 1.0.1
+    drone_version: 1.2.0
     cert_id: 727e9900-8f50-4ba8-8bce-09ab4be1e2a2
     domain_name: drone.kloudcover.com
     hosted_zone: kloudcover.com
