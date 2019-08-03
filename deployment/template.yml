@@ -120,6 +120,8 @@ Resources:
               Value: true
             - Name: DRONE_LOGS_DEBUG
               Value: true
+            - Name: DRONE_JSONNET_ENABLED
+              Value: true
           PortMappings:
             - ContainerPort: 80
           # MountPoints:
