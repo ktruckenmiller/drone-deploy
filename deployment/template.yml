@@ -7,7 +7,7 @@ Parameters:
     Type: String
   ClusterName:
     Type: String
-    Default: kloudcover
+    Default: production-kloudcover
   HostedZone:
     Type: String
   ServiceName:
@@ -17,13 +17,11 @@ Parameters:
 
 Resources:
 
-
-
   TargetGroup443:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckIntervalSeconds: 10
-      UnhealthyThresholdCount: 7
+      UnhealthyThresholdCount: 5
       Matcher:
         HttpCode: 200-299
       HealthCheckPath: "/healthz"
@@ -79,21 +77,16 @@ Resources:
           ContainerPort: 80
           TargetGroupArn: !Ref TargetGroup443
       Role: !ImportValue kloudcover-alb:ServiceRole
-      # PlacementStrategies:
-      #   - Type: spread
-      #     Field: instanceId
-      PlacementConstraints:
-        - Type: memberOf
-          Expression: attribute:ecs.instance-type != m3.medium
+      HealthCheckGracePeriodSeconds: 10
+      # PlacementConstraints:
+      #   - Type: memberOf
+      #     Expression: attribute:ecs.instance-type != m3.medium
       TaskDefinition: !Ref Task
 
 
   Task:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      # PlacementConstraints:
-      #   - Type: memberOf
-      #     Expression: attribute:ecs.instance-type != m3.medium
       ContainerDefinitions:
         - Name: drone-server
           Cpu: 20
@@ -120,12 +113,10 @@ Resources:
               Value: true
             - Name: DRONE_LOGS_DEBUG
               Value: true
+            - Name: DRONE_JSONNET_ENABLED
+              Value: true
           PortMappings:
             - ContainerPort: 80
-          # MountPoints:
-          #   - SourceVolume: 'drone'
-          #     ContainerPath: '/var/lib/drone'
-          #     ReadOnly: false
 
           LogConfiguration:
             LogDriver: awslogs

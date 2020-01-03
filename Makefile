@@ -16,3 +16,5 @@ deploy:
 		-e IAM_ROLE=arn:aws:iam::601394826940:role/admin \
 		ktruckenmiller/ansible \
 		ansible-playbook -i ansible_connection=localhost deploy.yml -vvv
+
+# local-agent:
