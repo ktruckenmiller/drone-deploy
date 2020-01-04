@@ -135,7 +135,7 @@ Resources:
               Value: !Sub https://${DomainName}
             - Name: DRONE_RPC_HOST
               Value: !Sub ${DomainName}
-            - Name: DRONE_HTTP_PROTO
+            - Name: DRONE_RPC_PROTO
               Value: https
             - Name: DRONE_LOGS_DEBUG
               Value: true
