@@ -1,5 +1,4 @@
-ARG VERSION
-FROM drone/drone:${VERSION}
+FROM drone/drone:1.6.4
 COPY vendor/ssm_get_parameter /bin/
 COPY server.sh /server.sh
 ADD vendor/busybox.tar.xz /

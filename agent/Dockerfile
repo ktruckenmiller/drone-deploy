@@ -1,5 +1,5 @@
 ARG VERSION
-FROM drone/agent:${VERSION}
+FROM drone/drone-runner-docker:1.1.0
 COPY agent.sh /agent.sh
 COPY vendor/ssm_get_parameter /bin/
 ADD vendor/busybox.tar.xz /
