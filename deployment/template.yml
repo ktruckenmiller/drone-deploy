@@ -134,7 +134,9 @@ Resources:
             - Name: DRONE_RPC_SERVER
               Value: !Sub https://${DomainName}
             - Name: DRONE_RPC_HOST
-              Value: !Sub https://${DomainName}
+              Value: !Sub ${DomainName}
+            - Name: DRONE_HTTP_PROTO
+              Value: https
             - Name: DRONE_LOGS_DEBUG
               Value: true
             - Name: AWS_DEFAULT_REGION
