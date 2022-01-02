@@ -1,0 +1,76 @@
+{
+  "load-balancer:account=601394826940:loadBalancerArn=arn$:aws:elasticloadbalancing:us-west-2:601394826940:loadbalancer/app/kloudco-ALB-1XOWGRS4DIG1S/0d27cd3e97e641d1:loadBalancerType=application:region=us-west-2": {
+    "loadBalancerArn": "arn:aws:elasticloadbalancing:us-west-2:601394826940:loadbalancer/app/kloudco-ALB-1XOWGRS4DIG1S/0d27cd3e97e641d1",
+    "loadBalancerCanonicalHostedZoneId": "Z1H1FL5HABSF5",
+    "loadBalancerDnsName": "kloudco-ALB-1XOWGRS4DIG1S-1468524797.us-west-2.elb.amazonaws.com",
+    "vpcId": "vpc-849531e0",
+    "securityGroupIds": [
+      "sg-006232154f20712d1",
+      "sg-8da93ef0",
+      "sg-06986b26f5108c3e2",
+      "sg-d8ab3ca5"
+    ],
+    "ipAddressType": "ipv4"
+  },
+  "vpc-provider:account=601394826940:filter.vpc-id=vpc-849531e0:region=us-west-2:returnAsymmetricSubnets=true": {
+    "vpcId": "vpc-849531e0",
+    "vpcCidrBlock": "10.78.0.0/16",
+    "availabilityZones": [],
+    "subnetGroups": [
+      {
+        "name": "Public",
+        "type": "Public",
+        "subnets": [
+          {
+            "subnetId": "subnet-bc3193d8",
+            "cidr": "10.78.0.0/18",
+            "availabilityZone": "us-west-2a",
+            "routeTableId": "rtb-7737b513"
+          },
+          {
+            "subnetId": "subnet-ed43849b",
+            "cidr": "10.78.64.0/18",
+            "availabilityZone": "us-west-2b",
+            "routeTableId": "rtb-7737b513"
+          },
+          {
+            "subnetId": "subnet-9b2938c2",
+            "cidr": "10.78.128.0/18",
+            "availabilityZone": "us-west-2c",
+            "routeTableId": "rtb-7737b513"
+          }
+        ]
+      }
+    ]
+  },
+  "security-group:account=601394826940:region=us-west-2:securityGroupId=sg-006232154f20712d1": {
+    "securityGroupId": "sg-006232154f20712d1",
+    "allowAllOutbound": false
+  },
+  "security-group:account=601394826940:region=us-west-2:securityGroupId=sg-8da93ef0": {
+    "securityGroupId": "sg-8da93ef0",
+    "allowAllOutbound": false
+  },
+  "security-group:account=601394826940:region=us-west-2:securityGroupId=sg-06986b26f5108c3e2": {
+    "securityGroupId": "sg-06986b26f5108c3e2",
+    "allowAllOutbound": false
+  },
+  "security-group:account=601394826940:region=us-west-2:securityGroupId=sg-d8ab3ca5": {
+    "securityGroupId": "sg-d8ab3ca5",
+    "allowAllOutbound": false
+  },
+  "hosted-zone:account=601394826940:domainName=kloudcover.com:region=us-west-2": {
+    "Id": "/hostedzone/Z1IJC8V5Z715J8",
+    "Name": "kloudcover.com."
+  },
+  "load-balancer-listener:account=601394826940:listenerArn=arn$:aws:elasticloadbalancing:us-west-2:601394826940:listener/app/kloudco-ALB-1XOWGRS4DIG1S/0d27cd3e97e641d1/fd04397ed274c342:loadBalancerArn=arn$:aws:elasticloadbalancing:us-west-2:601394826940:loadbalancer/app/kloudco-ALB-1XOWGRS4DIG1S/0d27cd3e97e641d1:loadBalancerType=application:region=us-west-2": {
+    "listenerArn": "arn:aws:elasticloadbalancing:us-west-2:601394826940:listener/app/kloudco-ALB-1XOWGRS4DIG1S/0d27cd3e97e641d1/fd04397ed274c342",
+    "listenerPort": 443,
+    "securityGroupIds": [
+      "sg-006232154f20712d1",
+      "sg-8da93ef0",
+      "sg-06986b26f5108c3e2",
+      "sg-d8ab3ca5"
+    ]
+  }
+}
