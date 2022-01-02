@@ -1,4 +1,4 @@
-FROM drone/drone:1.6.5
+FROM drone/drone:2
 COPY vendor/ssm_get_parameter /bin/
 COPY server.sh /server.sh
 ADD vendor/busybox.tar.xz /

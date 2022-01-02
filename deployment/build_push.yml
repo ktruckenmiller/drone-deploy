@@ -1,10 +1,10 @@
 ---
 
 - name: build agent
-  shell: docker build -t {{account}}.dkr.ecr.{{region}}.amazonaws.com/drone:agent-{{sha}} -f agent/Dockerfile --build-arg VERSION={{drone_version}} agent/.
+  shell: docker build -t {{account}}.dkr.ecr.{{region}}.amazonaws.com/drone:agent-{{sha}} -f agent/Dockerfile  agent/.
 
 - name: build server
-  shell: docker build -t {{account}}.dkr.ecr.{{region}}.amazonaws.com/drone:server-{{sha}} -f server/Dockerfile --build-arg VERSION={{drone_version}} server/.
+  shell: docker build -t {{account}}.dkr.ecr.{{region}}.amazonaws.com/drone:server-{{sha}} -f server/Dockerfile server/.
 
 - name: docker login
   shell: eval $(aws ecr get-login --no-include-email --region {{region}})
