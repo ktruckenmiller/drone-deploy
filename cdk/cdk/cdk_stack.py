@@ -250,7 +250,7 @@ class CdkStack(Stack):
             memory_reservation_mib=256,
             environment={
                 "DRONE_RPC_HOST": "drone-server",
-                "DRONE_CPU_QUOTA": "90",
+                "DRONE_CPU_QUOTA": "100",
                 "DRONE_RPC_DUMP_HTTP": "true",
                 "DRONE_RPC_DUMP_HTTP_BODY": "true",
                 "DRONE_RUNNER_CAPACITY": "2",
