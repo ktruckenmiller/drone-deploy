@@ -59,7 +59,7 @@ class CdkStack(Stack):
             vpc=self.vpc,
         )
         self.get_application()
-        self.get_autoscaler()
+        # self.get_autoscaler()
 
     def get_autoscaler(self):
         task_def = ecs.Ec2TaskDefinition(
@@ -97,7 +97,10 @@ class CdkStack(Stack):
             )
         )
         instance_profile = iam.CfnInstanceProfile(
-            self, "autoscalerprofile", roles=[instance_role.role_arn]
+            self,
+            "autoscalerprofile",
+            instance_profile_name="drone",
+            roles=[instance_role.role_name],
         )
 
         autoscaler_task_def = task_def.add_container(
@@ -177,7 +180,6 @@ class CdkStack(Stack):
             enable_execute_command=True,
             enable_ecs_managed_tags=True,
             launch_type="EC2",
-            role=Fn.import_value("kloudcover-alb:ServiceRole"),
             task_definition=task_def.task_definition_arn,
         )
 
